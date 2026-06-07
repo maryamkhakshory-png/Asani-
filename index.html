@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>چسباندن عمودی مانهوا</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+            padding: 15px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #16213e;
+            border-radius: 20px;
+            padding: 25px 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #e94560;
+            margin-bottom: 5px;
+            font-size: 24px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #aaa;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .btn-add {
+            background: #0f3460;
+            color: white;
+            border: 2px dashed #e94560;
+        }
+        
+        .btn-add:hover {
+            background: #1a1a4e;
+            border-color: #ff6b8a;
+        }
+        
+        .btn-stitch {
+            background: #e94560;
+            color: white;
+        }
+        
+        .btn-stitch:hover {
+            background: #ff6b8a;
+        }
+        
+        .btn-download {
+            background: #0f3460;
+            color: white;
+            border: 1px solid #e94560;
+        }
+        
+        .btn-download:hover {
+            background: #1a1a4e;
+        }
+        
+        .btn-clear {
+            background: #333;
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+        }
+        
+        .btn-clear:hover {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .image-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            min-height: 80px;
+            margin: 15px 0;
+            justify-content: center;
+        }
+        
+        .image-item {
+            position: relative;
+            width: 70px;
+            height: 95px;
+        }
+        
+        .image-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #e94560;
+        }
+        
+        .image-item .delete-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .counter {
+            text-align: center;
+            color: #e94560;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .preview-area {
+            margin-top: 20px;
+            text-align: center;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .preview-area img {
+            max-width: 100%;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .buttons-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .buttons-row .btn {
+            flex: 1;
+            min-width: 120px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📜 چسباندن عمودی مانهوا</h1>
+        <p class="subtitle">تصاویر را انتخاب کن | چسباندن عمودی | دانلود با کیفیت اصلی</p>
+        
+        <input type="file" id="fileInput" multiple accept="image/*">
+        
+        <button class="btn btn-add" onclick="document.getElementById('fileInput').click()">
+            📁 انتخاب و افزودن تصاویر
+        </button>
+        
+        <div class="counter" id="counter">📸 ۰ تصویر انتخاب شده</div>
+        
+        <div class="image-list" id="imageList"></div>
+        
+        <button class="btn btn-stitch" onclick="stitchImages()">
+            ✨ چسباندن عمودی تصاویر
+        </button>
+        
+        <div class="buttons-row">
+            <button class="btn btn-download" onclick="downloadImage('png')">
+                🖼️ دانلود PNG
+            </button>
+            <button class="btn btn-download" onclick="downloadImage('jpg')">
+                📸 دانلود JPG
+            </button>
+            <button class="btn btn-clear" onclick="clearAll()">
+                🗑️ حذف همه
+            </button>
+        </div>
+        
+        <div class="preview-area" id="previewArea">
+            <p style="color: #888;">پیش‌نمایش تصویر نهایی اینجا نمایش داده می‌شود</p>
+            <img id="previewImage" alt="پیش‌نمایش">
+        </div>
+    </div>
+
+    <script>
+        // ذخیره تصاویر در آرایه
+        let allImages = [];
+        let finalImageData = null;
+        
+        // گرفتن المان‌های HTML
+        const fileInput = document.getElementById('fileInput');
+        const imageList = document.getElementById('imageList');
+        const counter = document.getElementById('counter');
+        const previewImage = document.getElementById('previewImage');
+        const previewArea = document.getElementById('previewArea');
+        
+        // وقتی کاربر فایل انتخاب می‌کند
+        fileInput.addEventListener('change', function() {
+            const files = fileInput.files;
+            
+            if (files.length > 0) {
+                // تبدیل FileList به آرایه و مرتب‌سازی بر اساس نام
+                const filesArray = Array.from(files).sort((a, b) => {
+                    return a.name.localeCompare(b.name, undefined, {numeric: true});
+                });
+                
+                // اضافه کردن به آرایه اصلی
+                allImages = allImages.concat(filesArray);
+                
+                // بروزرسانی نمایش
+                updateDisplay();
+                
+                // ریست کردن input برای امکان انتخاب مجدد همان فایل‌ها
+                fileInput.value = '';
+            }
+        });
+        
+        // بروزرسانی لیست تصاویر
+        function updateDisplay() {
+            // خالی کردن لیست
+            imageList.innerHTML = '';
+            
+            // نمایش هر تصویر
+            allImages.forEach((file, index) => {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const div = document.createElement('div');
+                    div.className = 'image-item';
+                    
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.alt = 'تصویر ' + (index + 1);
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.innerHTML = '×';
+                    deleteBtn.onclick = function() {
+                        deleteImage(index);
+                    };
+                    
+                    div.appendChild(img);
+                    div.appendChild(deleteBtn);
+                    imageList.appendChild(div);
+                };
+                
+                reader.readAsDataURL(file);
+            });
+            
+            // بروزرسانی شمارنده
+            counter.textContent = '📸 ' + allImages.length + ' تصویر انتخاب شده';
+            
+            // مخفی کردن پیش‌نمایش قبلی
+            previewImage.style.display = 'none';
+            finalImageData = null;
+        }
+        
+        // حذف یک تصویر
+        function deleteImage(index) {
+            allImages.splice(index, 1);
+            updateDisplay();
+        }
+        
+        // حذف همه تصاویر
+        function clearAll() {
+            allImages = [];
+            imageList.innerHTML = '';
+            counter.textContent = '📸 ۰ تصویر انتخاب شده';
+            previewImage.style.display = 'none';
+            finalImageData = null;
+            previewArea.querySelector('p').style.display = 'block';
+        }
+        
+        // چسباندن تصاویر
+        function stitchImages() {
+            if (allImages.length === 0) {
+                alert('❗ لطفاً ابتدا تصاویر را انتخاب کنید!');
+                return;
+            }
+            
+            // نمایش پیام در حال پردازش
+            previewArea.querySelector('p').textContent = '⏳ در حال پردازش...';
+            previewArea.querySelector('p').style.display = 'block';
+            previewImage.style.display = 'none';
+            
+            // خواندن همه تصاویر
+            const imagePromises = allImages.map(file => {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = new Image();
+                        img.onload = function() {
+                            resolve(img);
+                        };
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                });
+            });
+            
+            Promise.all(imagePromises).then(images => {
+                // محاسبه ابعاد نهایی
+                let totalHeight = 0;
+                let maxWidth = 0;
+                
+                images.forEach(img => {
+                    totalHeight += img.naturalHeight;
+                    if (img.naturalWidth > maxWidth) {
+                        maxWidth = img.naturalWidth;
+                    }
+                });
+                
+                // ساخت canvas
+                const canvas = document.createElement('canvas');
+                canvas.width = maxWidth;
+                canvas.height = totalHeight;
+                const ctx = canvas.getContext('2d');
+                
+                // پس‌زمینه سفید
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // چسباندن تصاویر
+                let currentY = 0;
+                images.forEach(img => {
+                    const x = (maxWidth - img.naturalWidth) / 2;
+                    ctx.drawImage(img, x, currentY, img.naturalWidth, img.naturalHeight);
+                    currentY += img.naturalHeight;
+                });
+                
+                // ذخیره نتیجه
+                finalImageData = canvas.toDataURL('image/png');
+                
+                // نمایش پیش‌نمایش
+                previewImage.src = finalImageData;
+                previewImage.style.display = 'block';
+                previewArea.querySelector('p').style.display = 'none';
+                
+            }).catch(error => {
+                alert('❌ خطا در پردازش تصاویر!');
+                console.error(error);
+                previewArea.querySelector('p').textContent = 'خطا در پردازش تصاویر';
+            });
+        }
+        
+        // دانلود تصویر
+        function downloadImage(format) {
+            if (!finalImageData) {
+                alert('❗ ابتدا دکمه "چسباندن عمودی" را بزنید!');
+                return;
+            }
+            
+            let downloadData;
+            let fileName;
+            
+            if (format === 'png') {
+                downloadData = finalImageData;
+                fileName = 'manhwa_stitched.png';
+            } else {
+                // تبدیل به JPG
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+                    
+                    const jpgData = canvas.toDataURL('image/jpeg', 0.92);
+                    triggerDownload(jpgData, 'manhwa_stitched.jpg');
+                };
+                img.src = finalImageData;
+                return;
+            }
+            
+            triggerDownload(downloadData, fileName);
+        }
+        
+        function triggerDownload(dataUrl, fileName) {
+            const link = document.createElement('a');
+            link.download = fileName;
+            link.href = dataUrl;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+  </html>
